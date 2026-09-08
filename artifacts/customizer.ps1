@@ -42,60 +42,46 @@ catch {
     throw
 }
 # APPLICATIONS INSTALLATION
+# DOWNLOAD APPLICATION MANIFEST
 try {
     Write-Log '========== Starting Application Installation =========='
     Write-Log 'Downloading application manifest...'
     Invoke-WebRequest -Uri $appsUrl -OutFile $applicationsFile -UseBasicParsing
-    $Manifest = Get-Content $applicationsFile -Raw | ConvertFrom-Json
+    $manifest = Get-Content $applicationsFile -Raw | ConvertFrom-Json
     Write-Log "Packages to install: $($Manifest.packages.Count)"
-
-    foreach ($App in $Manifest.packages) {
-        try {
-            Write-Log "Installing: $($App.name) (source: $($App.source))"
-
-            switch ($App.source) {
-                'chocolatey' { if($app.switches){ choco install $app.name --no-progress --params $app.switches } else { choco install $app.name --no-progress } }
-                'custom' {
-                    if ($App.detectPath -and (Test-Path $App.detectPath)) {
-                        Write-Log "  Already installed: $($App.detectPath)"
-                        continue
-                    }
-                    $extension = [System.IO.Path]::GetExtension($App.installerUrl)
-                    $installerPath = Join-Path $env:TEMP "$($App.name)-installer$extension"
-                    Invoke-WebRequest -Uri $App.installerUrl -OutFile $installerPath -UseBasicParsing
-                    if ($extension -eq '.msi') {
-                        Start-Process -FilePath 'msiexec.exe' -ArgumentList "/i `"$installerPath`" $($App.switches)" -Wait
-                    }
-                    else {
-                        Start-Process -FilePath $installerPath -ArgumentList $App.switches -Wait
-                    }
-                }
-                default {
-                    Write-Log "ERROR: Unknown source '$($App.source)' for $($App.name)."
-                    continue
-                }
-            }
-
-            if ($LASTEXITCODE -eq 0) {
-                Write-Log "Installed: $($App.name)"
-            }
-            elseif ($LASTEXITCODE -eq 1641 -or $LASTEXITCODE -eq 3010) {
-                Write-Log "Installed (reboot pending): $($App.name)"
-            }
-            else {
-                Write-Log "WARNING: Exit code [$LASTEXITCODE]: $($App.name)"
-            }
-        }
-        catch {
-            Write-Log "ERROR: Failed to install [$($App.name)]: $_"
-        }
-    }
-    Write-Log '========== Application Installation Complete =========='
 }
 catch {
-    Write-Log "FATAL ERROR: $_"
+    Write-Log "FATAL: Failed to download application manifest: $_"
     throw
 }
+
+# INSTALL APPLICATIONS
+foreach ($App in $manifest.packages) {
+    try {
+        Write-Log "Installing: $($App.name) (source: $($App.source))"
+        switch ($App.source) {
+            'chocolatey' { if ($App.params) { choco install $App.name --no-progress --params $App.switches } else { choco install $App.name --no-progress } }
+            'custom'     {
+                if ($App.detectPath -and (Test-Path $App.detectPath)) { Write-Log "  Already installed: $($App.detectPath)"; continue}
+
+                $extension = [System.IO.Path]::GetExtension($App.installerUrl)
+                $installerPath = Join-Path $env:TEMP "$($App.name)-installer$extension"
+                Invoke-WebRequest -Uri $App.installerUrl -OutFile $installerPath -UseBasicParsing
+
+                if ($extension -eq '.msi') { Start-Process -FilePath 'msiexec.exe' -ArgumentList "/i `"$installerPath`" $($App.switches)" -Wait }
+                else { Start-Process -FilePath $installerPath -ArgumentList $App.switches -Wait }
+            }
+            default     { Write-Log "ERROR: Unknown source '$($App.source)' for $($App.name)."; continue }
+        }
+
+        Write-Log "Installed: $($App.name)"
+    }
+    catch {
+        Write-Log "ERROR: Failed to install [$($App.name)]: $_"
+    }
+}
+
+Write-Log '========== Application Installation Complete =========='
 # IMAGE OPTIMIZATIONS
  
 try {
