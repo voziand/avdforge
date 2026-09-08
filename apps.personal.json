@@ -2,31 +2,31 @@
   "packages": [
     {
       "name": "flameshot",
-      "source": "chocolatey",
+      "source": "chocolatey"
     },
     {
       "name": "powershell-core",
-      "source": "chocolatey",
+      "source": "chocolatey"
     },
     {
       "name": "firefox",
-      "source": "chocolatey",
+      "source": "chocolatey"
     },
     {
       "name": "vscodium",
-      "source": "chocolatey",
+      "source": "chocolatey"
     },
     {
       "name": "notepadplusplus",
-      "source": "chocolatey",
+      "source": "chocolatey"
     },
     {
       "name": "msrdcwebrtcsvc",
-      "source": "chocolatey",
+      "source": "chocolatey"
     },
     {
       "name": "vcredist-all",
-      "source": "chocolatey",
+      "source": "chocolatey"
     },
     {
       "name": "obsidian",
