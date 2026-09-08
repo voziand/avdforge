@@ -54,7 +54,7 @@ try {
             Write-Log "Installing: $($App.name) (source: $($App.source))"
 
             switch ($App.source) {
-                'chocolatey' { choco install $app.name --no-progress $App.switches }
+                'chocolatey' { if($app.switches){ choco install $app.name --no-progress --params $app.switches } else { choco install $app.name --no-progress } }
                 'custom' {
                     if ($App.detectPath -and (Test-Path $App.detectPath)) {
                         Write-Log "  Already installed: $($App.detectPath)"
