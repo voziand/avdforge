@@ -1,7 +1,7 @@
 #Requires -RunAsAdministrator
 $ErrorActionPreference = 'Stop'
 $appsUrl = 'https://raw.githubusercontent.com/voziand/avdfabric/main/apps.json'
-$ImageType        = $env:IMAGE_TYPE
+$ImageType = $env:IMAGE_TYPE
 $OptimizationsUrl = $env:OPTIMIZATIONS_URL
 $LogFile = 'C:\Windows\Temp\InstallApps.log'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -56,8 +56,8 @@ try {
                 'chocolatey' { choco install $app.name --no-progress $app.switche }
                 'custom' {
                     if ($App.detectPath -and (Test-Path $App.detectPath)) {
-                            Write-Log "  Already installed: $($App.detectPath)"
-                            continue
+                        Write-Log "  Already installed: $($App.detectPath)"
+                        continue
                     }
                     $extension = [System.IO.Path]::GetExtension($App.installerUrl)
                     $installerPath = Join-Path $env:TEMP "$($App.name)-installer$extension"
@@ -131,7 +131,7 @@ try {
             Write-Log "  WARNING: Could not disable task $($Task.name): $_"
         }
     }
- # DEBLOAT
+    # DEBLOAT
     Write-Log "Removing $($Opt.appxPackages.Count) AppX packages..."
     foreach ($Pkg in $Opt.appxPackages) {
         try {
@@ -191,4 +191,60 @@ try {
 catch {
     Write-Log "FATAL ERROR during optimizations: $_"
     throw
+}
+
+# FsLogix configuration - Only applies if the image is multisession version, ie pooled deployment
+if ($ImageType -eq 'pooled') {
+    storageAccount = "$($env:USR_PROFILE_SA_NAME).file.core.windows.net"
+    $profileShare = "\\$($storageAccount)\$($env:USR_PROFILE_FS_NAME)"
+
+    New-Item -Path "HKLM:\SOFTWARE" -Name "FSLogix" -ErrorAction Ignore
+    New-Item -Path "HKLM:\SOFTWARE\FSLogix" -Name "Profiles" -ErrorAction Ignore
+    New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "Enabled" -PropertyType dword -Value 1 -Force
+    New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "ConcurrentUserSessions" -PropertyType dword -Value 1 -Force
+    New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "DeleteLocalProfileWhenVHDShouldApply" -PropertyType dword -Value 1 -Force
+    New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "FlipFlopProfileDirectoryName" -PropertyType dword -Value 1 -Force
+    New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "LockedRetryCount" -PropertyType dword -Value 3 -Force
+    New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "LockedRetryInterval" -PropertyType dword -Value 15 -Force
+    New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "ProfileType" -PropertyType dword -Value 0 -Force
+    New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "ReAttachIntervalSeconds" -PropertyType dword -Value 15 -Force
+    New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "ReAttachRetryCount" -PropertyType dword -Value 3 -Force
+    New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "SizeInMBs" -PropertyType dword -Value 30000 -Force
+    New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "VHDLocations" -PropertyType string -Value $profileShare -Force
+    New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "VolumeType" -PropertyType string -Value "VHDX" -Force
+    New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Apps" -Name "CleanupInvalidSessions" -PropertyType dword -Value 1 -Force
+
+    # Configure credentials to roam with the profile
+    New-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\AzureADAccount" -Name "LoadCredKeyFromProfile" -Value 1 -PropertyType DWord -Force
+
+    # Configure cloud kerberos tiker retrieval
+    New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\Kerberos\Parameters" -Name "CloudKerberosTicketRetrievalEnabled" -PropertyType DWord -Value 1 -Force
+
+    # Exclude fslogix processes and profiles from Microsoft Defender
+    Add-MpPreference -ExclusionProcess "frxsvc.exe"
+    Add-MpPreference -ExclusionProcess "frxccds.exe"
+
+    # Driver files
+    Add-MpPreference -ExclusionProcess "frxdrv.sys"
+    Add-MpPreference -ExclusionProcess "frxdrvvt.sys"
+    Add-MpPreference -ExclusionProcess "frxccd.sys"
+
+    # Directories
+    Add-MpPreference -ExclusionPath "$($env:ProgramFiles)\FSLogix\Apps"
+    Add-MpPreference -ExclusionPath "$($env:ProgramData)\FSLogix"
+    Add-MpPreference -ExclusionPath "$($env:LOCALAPPDATA)\FSLogix"
+
+    # Cloud Cache folders
+    Add-MpPreference -ExclusionPath "$($env:ProgramData)\FSLogix\Cache"
+    Add-MpPreference -ExclusionPath "$($env:ProgramData)\FSLogix\Proxy"
+
+    # Temporary VHD/VHDX files
+    Add-MpPreference -ExclusionPath "$($env:TEMP)\*\*.VHD"
+    Add-MpPreference -ExclusionPath "$($env:TEMP)\*\*.VHDX"
+    Add-MpPreference -ExclusionPath "$($env:WINDIR)\TEMP\*\*.VHD"
+    Add-MpPreference -ExclusionPath "$($env:WINDIR)\TEMP\*\*.VHDX"
+
+    # SMB file share
+    Add-MpPreference -ExclusionPath "$profileShare\*\*.VHD*"
+
 }
