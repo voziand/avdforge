@@ -1,16 +1,18 @@
-#Requires -RunAsAdministrator
-$ErrorActionPreference = 'Stop'
+$errorActionPreference = 'Stop'
 $appsUrl = 'https://raw.githubusercontent.com/voziand/avdfabric/main/apps.json'
-$ImageType = $env:IMAGE_TYPE
-$OptimizationsUrl = $env:OPTIMIZATIONS_URL
-$LogFile = 'C:\Windows\Temp\InstallApps.log'
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+$imageType = $env:IMAGE_TYPE
+$applicationsFile = Join-Path $env:TEMP 'apps.json'
+$optimizationsUrl = "https://raw.githubusercontent.com/voziand/avdfabric/main/optimizations.$($imageType).json"
+$logFile = 'C:\Windows\Temp\InstallApps.log'
+$redirectionsFolder = "C:\ProgramData\FSLogix"
+$redirectionsFilePath = "$redirectionsFolder\redirections.xml"
+$redirectionsFileUrl = "https://raw.githubusercontent.com/voziand/avdfabric/main/redirections.xml"
 
 function Write-Log {
     param([string]$Message)
     $Entry = "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') - $Message"
     Write-Host $Entry
-    Add-Content -Path $LogFile -Value $Entry
+    Add-Content -Path $logFile -Value $Entry
 }
 
 function Install-Chocolatey {
@@ -42,10 +44,9 @@ catch {
 # APPLICATIONS INSTALLATION
 try {
     Write-Log '========== Starting Application Installation =========='
-    $ManifestFile = Join-Path $env:TEMP 'apps.json'
     Write-Log 'Downloading application manifest...'
-    Invoke-WebRequest -Uri $appsUrl -OutFile $ManifestFile -UseBasicParsing
-    $Manifest = Get-Content $ManifestFile -Raw | ConvertFrom-Json
+    Invoke-WebRequest -Uri $appsUrl -OutFile $applicationsFile -UseBasicParsing
+    $Manifest = Get-Content $applicationsFile -Raw | ConvertFrom-Json
     Write-Log "Packages to install: $($Manifest.packages.Count)"
 
     foreach ($App in $Manifest.packages) {
@@ -194,7 +195,8 @@ catch {
 }
 
 # FsLogix configuration - Only applies if the image is multisession version, ie pooled deployment
-if ($ImageType -eq 'pooled') {
+if ($imageType -eq 'pooled') {
+    Write-Log "Configureing FSLogix..."
     $storageAccount = "$($env:USR_PROFILE_SA_NAME).file.core.windows.net"
     $profileShare = "\\$($storageAccount)\$($env:USR_PROFILE_FS_NAME)"
 
@@ -248,5 +250,10 @@ if ($ImageType -eq 'pooled') {
 
     # SMB file share
     Add-MpPreference -ExclusionPath "$profileShare\*\*.VHD*"
+
+    # Redirections file
+    Write-Log 'Downloading redirections file...'
+    Invoke-WebRequest -Uri $redirectionsFileUrl -OutFile $redirectionsFilePath -UseBasicParsing
+    New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "RedirXMLSourceFolder" -PropertyType string -Value $redirectionsFolder -Force
 
 }
