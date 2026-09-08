@@ -1,12 +1,12 @@
 $errorActionPreference = 'Stop'
-$appsUrl = 'https://raw.githubusercontent.com/voziand/avdfabric/main/apps.json'
+$appsUrl = "https://raw.githubusercontent.com/voziand/avdforge/main/artifacts/apps.$($imageType).json"
 $imageType = $env:IMAGE_TYPE
 $applicationsFile = Join-Path $env:TEMP 'apps.json'
-$optimizationsUrl = "https://raw.githubusercontent.com/voziand/avdfabric/main/optimizations.$($imageType).json"
+$optimizationsUrl = "https://raw.githubusercontent.com/voziand/avdforge/main/artifacts/optimizations.$($imageType).json"
 $logFile = 'C:\Windows\Temp\InstallApps.log'
 $redirectionsFolder = "C:\ProgramData\FSLogix"
 $redirectionsFilePath = "$redirectionsFolder\redirections.xml"
-$redirectionsFileUrl = "https://raw.githubusercontent.com/voziand/avdfabric/main/redirections.xml"
+$redirectionsFileUrl = "https://raw.githubusercontent.com/voziand/avdforge/main/artifacts/redirections.xml"
 
 function Write-Log {
     param([string]$Message)
