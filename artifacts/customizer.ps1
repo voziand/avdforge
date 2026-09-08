@@ -1,8 +1,7 @@
 $errorActionPreference = 'Stop'
-$appsUrl = "https://raw.githubusercontent.com/voziand/avdforge/main/artifacts/apps.$($imageType).json"
-$imageType = $env:IMAGE_TYPE
+$appsUrl = "https://raw.githubusercontent.com/voziand/avdforge/main/artifacts/apps.$($env:IMAGE_TYPE).json"
 $applicationsFile = Join-Path $env:TEMP 'apps.json'
-$optimizationsUrl = "https://raw.githubusercontent.com/voziand/avdforge/main/artifacts/optimizations.$($imageType).json"
+$optimizationsUrl = "https://raw.githubusercontent.com/voziand/avdforge/main/artifacts/optimizations.$($env:IMAGE_TYPE).json"
 $logFile = 'C:\Windows\Temp\InstallApps.log'
 $redirectionsFolder = "C:\ProgramData\FSLogix"
 $redirectionsFilePath = "$redirectionsFolder\redirections.xml"
@@ -181,7 +180,7 @@ catch {
 }
 
 # FsLogix configuration - Only applies if the image is multisession version, ie pooled deployment
-if ($imageType -eq 'pooled') {
+if ($env:IMAGE_TYPE -eq 'pooled') {
     Write-Log "Configureing FSLogix..."
     $storageAccount = "$($env:USR_PROFILE_SA_NAME).file.core.windows.net"
     $profileShare = "\\$($storageAccount)\$($env:USR_PROFILE_FS_NAME)"
