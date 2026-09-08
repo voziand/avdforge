@@ -1,0 +1,58 @@
+{
+  "packages": [
+    {
+      "name": "flameshot",
+      "source": "chocolatey",
+      "switches": ""
+    },
+    {
+      "name": "powershell-core",
+      "source": "chocolatey",
+      "switches": ""
+    },
+    {
+      "name": "firefox",
+      "source": "chocolatey",
+      "switches": ""
+    },
+    {
+      "name": "vscodium",
+      "source": "chocolatey",
+      "switches": ""
+    },
+    {
+      "name": "notepadplusplus",
+      "source": "chocolatey",
+      "switches": ""
+    },
+    {
+      "name": "msrdcwebrtcsvc",
+      "source": "chocolatey",
+      "switches": ""
+    },
+    {
+      "name": "vcredist-all",
+      "source": "chocolatey",
+      "switches": ""
+    },
+    {
+      "name": "obsidian",
+      "source": "custom",
+      "installerUrl": "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.13.7/Obsidian-1.13.7.exe",
+      "detectPath": "C:\\Program Files\\Obsidian\\Obsidian.exe",
+      "switches": "/S /ALLUSERS"
+    },
+    {
+      "name": "webrtc-redirector",
+      "source": "custom",
+      "installerUrl": "https://aka.ms/msrdcwebrtcsvc/msi",
+      "switches": "/qn /norestart",
+      "detectPath": "C:\\Program Files\\Remote Desktop WebRTC Redirector\\MsRdcWebRTCSvc.exe"
+    },
+    {
+      "name": "office365proplus",
+      "source": "chocolatey",
+      "switches": "'/exclude:Access Publisher Lync'"
+    }
+  ]
+}
