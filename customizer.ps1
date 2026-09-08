@@ -195,7 +195,7 @@ catch {
 
 # FsLogix configuration - Only applies if the image is multisession version, ie pooled deployment
 if ($ImageType -eq 'pooled') {
-    storageAccount = "$($env:USR_PROFILE_SA_NAME).file.core.windows.net"
+    $storageAccount = "$($env:USR_PROFILE_SA_NAME).file.core.windows.net"
     $profileShare = "\\$($storageAccount)\$($env:USR_PROFILE_FS_NAME)"
 
     New-Item -Path "HKLM:\SOFTWARE" -Name "FSLogix" -ErrorAction Ignore
@@ -206,9 +206,11 @@ if ($ImageType -eq 'pooled') {
     New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "FlipFlopProfileDirectoryName" -PropertyType dword -Value 1 -Force
     New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "LockedRetryCount" -PropertyType dword -Value 3 -Force
     New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "LockedRetryInterval" -PropertyType dword -Value 15 -Force
+    New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "PreventLoginWithTempProfile" -PropertyType dword -Value 1
     New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "ProfileType" -PropertyType dword -Value 0 -Force
     New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "ReAttachIntervalSeconds" -PropertyType dword -Value 15 -Force
     New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "ReAttachRetryCount" -PropertyType dword -Value 3 -Force
+    New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "RemoveOrphanedOSTFilesOnLogoff" -PropertyType dword -Value 1 -Force
     New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "SizeInMBs" -PropertyType dword -Value 30000 -Force
     New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "VHDLocations" -PropertyType string -Value $profileShare -Force
     New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "VolumeType" -PropertyType string -Value "VHDX" -Force
@@ -217,7 +219,7 @@ if ($ImageType -eq 'pooled') {
     # Configure credentials to roam with the profile
     New-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\AzureADAccount" -Name "LoadCredKeyFromProfile" -Value 1 -PropertyType DWord -Force
 
-    # Configure cloud kerberos tiker retrieval
+    # Configure cloud kerberos tiket retrieval
     New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\Kerberos\Parameters" -Name "CloudKerberosTicketRetrievalEnabled" -PropertyType DWord -Value 1 -Force
 
     # Exclude fslogix processes and profiles from Microsoft Defender
@@ -232,15 +234,15 @@ if ($ImageType -eq 'pooled') {
     # Directories
     Add-MpPreference -ExclusionPath "$($env:ProgramFiles)\FSLogix\Apps"
     Add-MpPreference -ExclusionPath "$($env:ProgramData)\FSLogix"
-    Add-MpPreference -ExclusionPath "$($env:LOCALAPPDATA)\FSLogix"
+    Add-MpPreference -ExclusionPath "C:\Users\*\AppData\Local\FSLogix"
 
     # Cloud Cache folders
     Add-MpPreference -ExclusionPath "$($env:ProgramData)\FSLogix\Cache"
     Add-MpPreference -ExclusionPath "$($env:ProgramData)\FSLogix\Proxy"
 
     # Temporary VHD/VHDX files
-    Add-MpPreference -ExclusionPath "$($env:TEMP)\*\*.VHD"
-    Add-MpPreference -ExclusionPath "$($env:TEMP)\*\*.VHDX"
+    Add-MpPreference -ExclusionPath "C:\Users\*\AppData\Local\Temp\*\*.VHD"
+    Add-MpPreference -ExclusionPath "C:\Users\*\AppData\Local\Temp\*\*.VHDX"
     Add-MpPreference -ExclusionPath "$($env:WINDIR)\TEMP\*\*.VHD"
     Add-MpPreference -ExclusionPath "$($env:WINDIR)\TEMP\*\*.VHDX"
 
