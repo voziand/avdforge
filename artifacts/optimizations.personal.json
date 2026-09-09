@@ -172,6 +172,5 @@
     "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\WMI\\Autologger\\DiagLog",
     "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\WMI\\Autologger\\SQMLogger",
     "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\WMI\\Autologger\\WiFiSession"
-  ],
-  "diskCleanup": true
+  ]
 }
