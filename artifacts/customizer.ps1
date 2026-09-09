@@ -188,9 +188,11 @@ if ($env:IMAGE_TYPE -eq 'pooled') {
     New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Apps" -Name "CleanupInvalidSessions" -PropertyType dword -Value 1 -Force
 
     # Configure credentials to roam with the profile
+    New-Item -Path "HKLM:\Software\Policies\Microsoft" -Name "AzureADAccount" -ErrorAction Ignore
     New-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\AzureADAccount" -Name "LoadCredKeyFromProfile" -Value 1 -PropertyType DWord -Force
 
     # Configure cloud kerberos ticket retrieval
+    New-Item -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\Kerberos" -Name "Parameters" -ErrorAction Ignore
     New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\Kerberos\Parameters" -Name "CloudKerberosTicketRetrievalEnabled" -PropertyType DWord -Value 1 -Force
 
     # Exclude fslogix processes and profiles from Microsoft Defender
