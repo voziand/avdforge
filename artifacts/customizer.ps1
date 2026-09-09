@@ -63,7 +63,7 @@ foreach ($App in $manifest.packages) {
             'custom'     {
                 if ($App.detectPath -and (Test-Path $App.detectPath)) { Write-Log "  Already installed: $($App.detectPath)"; continue}
 
-                $extension = [System.IO.Path]::GetExtension($App.installerUrl)
+                $extension = if ($App.installerType) { ".$($App.installerType)" } else { [System.IO.Path]::GetExtension($App.installerUrl) }
                 $installerPath = Join-Path $env:TEMP "$($App.name)-installer$extension"
                 Invoke-WebRequest -Uri $App.installerUrl -OutFile $installerPath -UseBasicParsing
 
