@@ -190,7 +190,7 @@ if ($env:IMAGE_TYPE -eq 'pooled') {
     # Configure credentials to roam with the profile
     New-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\AzureADAccount" -Name "LoadCredKeyFromProfile" -Value 1 -PropertyType DWord -Force
 
-    # Configure cloud kerberos tiket retrieval
+    # Configure cloud kerberos ticket retrieval
     New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\Kerberos\Parameters" -Name "CloudKerberosTicketRetrievalEnabled" -PropertyType DWord -Value 1 -Force
 
     # Exclude fslogix processes and profiles from Microsoft Defender
