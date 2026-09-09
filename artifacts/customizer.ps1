@@ -156,22 +156,6 @@ try {
             Write-Log "  WARNING: Could not disable autologger $Logger`: $_"
         }
     }
- 
-    if ($Opt.diskCleanup -eq $true) {
-        Write-Log 'Running disk cleanup...'
-        Get-ChildItem -Path C:\ -Include *.tmp, *.dmp, *.etl, *.evtx, thumbcache*.db, *.log -File -Recurse -Force -ErrorAction SilentlyContinue | Remove-Item -ErrorAction SilentlyContinue
-        Remove-Item -Path $env:windir\Temp\* -Recurse -Force -ErrorAction SilentlyContinue -Exclude packer*.ps1
-        Remove-Item -Path $env:TEMP\* -Recurse -Force -ErrorAction SilentlyContinue -Exclude packer*.ps1
-        Remove-Item -Path $env:ProgramData\Microsoft\Windows\WER\Temp\* -Recurse -Force -ErrorAction SilentlyContinue
-        Remove-Item -Path $env:ProgramData\Microsoft\Windows\WER\ReportArchive\* -Recurse -Force -ErrorAction SilentlyContinue
-        Remove-Item -Path $env:ProgramData\Microsoft\Windows\WER\ReportQueue\* -Recurse -Force -ErrorAction SilentlyContinue
-        Remove-Item -Path $env:ProgramData\Microsoft\Windows\RetailDemo\* -Recurse -Force -ErrorAction SilentlyContinue
-        Clear-RecycleBin -Force -ErrorAction SilentlyContinue
-        Clear-BCCache -Force -ErrorAction SilentlyContinue
-        Dism /Online /Cleanup-Image /StartComponentCleanup /ResetBase /Quiet
-        Write-Log 'Disk cleanup complete.'
-    }
- 
     Write-Log '========== Image Optimizations Complete =========='
 }
 catch {
