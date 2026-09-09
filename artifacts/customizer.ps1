@@ -177,7 +177,7 @@ if ($env:IMAGE_TYPE -eq 'pooled') {
     New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "FlipFlopProfileDirectoryName" -PropertyType dword -Value 1 -Force
     New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "LockedRetryCount" -PropertyType dword -Value 3 -Force
     New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "LockedRetryInterval" -PropertyType dword -Value 15 -Force
-    New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "PreventLoginWithTempProfile" -PropertyType dword -Value 1
+    New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "PreventLoginWithTempProfile" -PropertyType dword -Value 1 -Force
     New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "ProfileType" -PropertyType dword -Value 0 -Force
     New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "ReAttachIntervalSeconds" -PropertyType dword -Value 15 -Force
     New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "ReAttachRetryCount" -PropertyType dword -Value 3 -Force
