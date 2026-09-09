@@ -59,7 +59,7 @@ foreach ($App in $manifest.packages) {
     try {
         Write-Log "Installing: $($App.name) (source: $($App.source))"
         switch ($App.source) {
-            'chocolatey' { if ($App.params) { choco install $App.name --no-progress --params $App.switches } else { choco install $App.name --no-progress } }
+            'chocolatey' { if ($App.switches) { choco install $App.name --no-progress --params $App.switches --execution-timeout=600 } else { choco install $App.name --no-progress --execution-timeout=600} }
             'custom'     {
                 if ($App.detectPath -and (Test-Path $App.detectPath)) { Write-Log "  Already installed: $($App.detectPath)"; continue}
 
@@ -165,7 +165,7 @@ catch {
 
 # FsLogix configuration - Only applies if the image is multisession version, ie pooled deployment
 if ($env:IMAGE_TYPE -eq 'pooled') {
-    Write-Log "Configureing FSLogix..."
+    Write-Log "Configuring FSLogix..."
     $storageAccount = "$($env:USR_PROFILE_SA_NAME).file.core.windows.net"
     $profileShare = "\\$($storageAccount)\$($env:USR_PROFILE_FS_NAME)"
 
