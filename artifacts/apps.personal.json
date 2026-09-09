@@ -21,10 +21,6 @@
       "source": "chocolatey"
     },
     {
-      "name": "msrdcwebrtcsvc",
-      "source": "chocolatey"
-    },
-    {
       "name": "vcredist-all",
       "source": "chocolatey"
     },
