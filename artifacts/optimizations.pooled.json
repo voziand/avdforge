@@ -187,6 +187,5 @@
     "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\WMI\\Autologger\\ReadyBoot",
     "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\WMI\\Autologger\\SQMLogger",
     "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\WMI\\Autologger\\WiFiSession"
-  ],
-  "diskCleanup": true
+  ]
 }
