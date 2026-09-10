@@ -1,6 +1,5 @@
 $errorActionPreference = 'Stop'
 $appsUrl = "https://raw.githubusercontent.com/voziand/avdforge/main/artifacts/apps.$($env:IMAGE_TYPE).json"
-$applicationsFile = Join-Path $env:TEMP 'apps.json'
 $optimizationsUrl = "https://raw.githubusercontent.com/voziand/avdforge/main/artifacts/optimizations.$($env:IMAGE_TYPE).json"
 $logFile = 'C:\Windows\Temp\InstallApps.log'
 $redirectionsFolder = "C:\ProgramData\FSLogix"
@@ -18,7 +17,7 @@ try {
     Write-Log 'Checking for Chocolatey...'
     $chocoCmd = Get-Command choco.exe -ErrorAction SilentlyContinue
     if ($chocoCmd) {
-        Write-Log "Chocolatey already installed at: $($ChocoCmd.Source)"
+        Write-Log "Chocolatey already installed at: $($chocoCmd.Source)"
     }
     else {
         Write-Log 'Installing Chocolatey...'
@@ -63,6 +62,8 @@ foreach ($app in $manifest.packages) {
 
                 if ($extension -eq '.msi') { Start-Process -FilePath 'msiexec.exe' -ArgumentList "/i `"$installerPath`" $($app.switches)" -Wait }
                 else { Start-Process -FilePath $installerPath -ArgumentList $App.switches -Wait }
+                # clean up
+                Remove-Item -Path $installerPath -Force -ErrorAction SilentlyContinue
             }
             default     { Write-Log "ERROR: Unknown source '$($app.source)' for $($app.name)."; continue }
         }
@@ -122,7 +123,7 @@ try {
     }
  
     Write-Log "Applying $($optimizations.registrySettings.Count) registry settings..."
-    foreach ($registrySetting in $$optimizations.registrySettings) {
+    foreach ($registrySetting in $optimizations.registrySettings) {
         try {
             if (-not (Test-Path $registrySetting.path)) {
                 New-Item -Path $registrySetting.path -Force | Out-Null
