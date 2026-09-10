@@ -164,6 +164,42 @@
       "name": "DisableSearchBoxSuggestions",
       "type": "DWORD",
       "value": 1
+    },
+    {
+      "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\OOBE",
+      "name": "DisablePrivacyExperience",
+      "type": "DWord",
+      "value": 1
+    },
+    {
+      "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\LocationAndSensors",
+      "name": "DisableLocation",
+      "type": "DWord",
+      "value": 1
+    },
+    {
+      "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\FindMyDevice",
+      "name": "AllowFindMyDevice",
+      "type": "DWord",
+      "value": 0
+    },
+    {
+      "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\InputPersonalization",
+      "name": "AllowInputPersonalization",
+      "type": "DWord",
+      "value": 0
+    },
+    {
+      "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CurrentVersion\\PushNotifications",
+      "name": "NoTileApplicationNotification",
+      "type": "DWord",
+      "value": 1
+    },
+    {
+      "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\AdvertisingInfo",
+      "name": "DisabledByGroupPolicy",
+      "type": "DWord",
+      "value": 1
     }
   ],
   "autologgers": [
