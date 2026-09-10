@@ -85,10 +85,7 @@ Write-Log '========== Application Installation Complete =========='
  
 try {
     Write-Log '========== Starting Image Optimizations =========='
-    $OptFile = Join-Path $env:TEMP 'optimizations.json'
-    Write-Log 'Downloading optimization configuration...'
-    Invoke-WebRequest -Uri $optimizationsUrl -OutFile $OptFile -UseBasicParsing
-    $Opt = Get-Content $OptFile -Raw | ConvertFrom-Json
+    $Opt = Invoke-RestMethod -Uri $optimizationsUrl
  
     Write-Log "Disabling $($Opt.services.Count) services..."
     foreach ($Svc in $Opt.services) {
