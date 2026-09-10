@@ -13,34 +13,32 @@ function Write-Log {
     Write-Host $Entry
     Add-Content -Path $logFile -Value $Entry
 }
-
-function Install-Chocolatey {
-    Write-Log 'Checking for Chocolatey...'
-    $ChocoCmd = Get-Command choco.exe -ErrorAction SilentlyContinue
-    if ($ChocoCmd) {
-        Write-Log "Chocolatey already installed at: $($ChocoCmd.Source)"
-        return
-    }
-    Write-Log 'Installing Chocolatey...'
-    Set-ExecutionPolicy Bypass -Scope Process -Force
-    Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-    $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine')
-    $ChocoCmd = Get-Command choco.exe -ErrorAction SilentlyContinue
-    if (-not $ChocoCmd) {
-        throw 'Chocolatey installation completed but choco.exe was not found.'
-    }
-    choco feature enable -n allowGlobalConfirmation
-    Write-Log "Chocolatey installed at: $($ChocoCmd.Source)"
-}
-
+# Install cholocatey
 try {
-    Install-Chocolatey
+    Write-Log 'Checking for Chocolatey...'
+    $chocoCmd = Get-Command choco.exe -ErrorAction SilentlyContinue
+    if ($chocoCmd) {
+        Write-Log "Chocolatey already installed at: $($ChocoCmd.Source)"
+    }
+    else {
+        Write-Log 'Installing Chocolatey...'
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+        $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine')
+        $chocoCmd = Get-Command choco.exe -ErrorAction SilentlyContinue
+        if (-not $chocoCmd) {
+            throw 'Chocolatey installation completed but choco.exe was not found.'
+        }
+        choco feature enable -n allowGlobalConfirmation
+        Write-Log "Chocolatey installed at: $($chocoCmd.Source)"
+    }
 }
 catch {
     Write-Log "FATAL: Failed to install Chocolatey. $_"
     throw
 }
-# APPLICATIONS INSTALLATION
+
+# INSTALL APPLICATIONS
 try {
     Write-Log '========== Starting Application Installation =========='
     $manifest = Invoke-RestMethod -Uri $appsUrl
@@ -51,103 +49,102 @@ catch {
     throw
 }
 
-# INSTALL APPLICATIONS
-foreach ($App in $manifest.packages) {
+foreach ($app in $manifest.packages) {
     try {
-        Write-Log "Installing: $($App.name) (source: $($App.source))"
-        switch ($App.source) {
-            'chocolatey' { if ($App.switches) { choco install $App.name --no-progress --params $App.switches --execution-timeout=600 } else { choco install $App.name --no-progress --execution-timeout=600} }
+        Write-Log "Installing: $($app.name) (source: $($app.source))"
+        switch ($app.source) {
+            'chocolatey' { if ($app.switches) { choco install $app.name --no-progress --params $app.switches --execution-timeout=600 } else { choco install $app.name --no-progress --execution-timeout=600} }
             'custom'     {
-                if ($App.detectPath -and (Test-Path $App.detectPath)) { Write-Log "  Already installed: $($App.detectPath)"; continue}
+                if ($app.detectPath -and (Test-Path $app.detectPath)) { Write-Log "  Already installed: $($app.detectPath)"; continue}
 
-                $extension = if ($App.installerType) { ".$($App.installerType)" } else { [System.IO.Path]::GetExtension($App.installerUrl) }
-                $installerPath = Join-Path $env:TEMP "$($App.name)-installer$extension"
-                Invoke-WebRequest -Uri $App.installerUrl -OutFile $installerPath -UseBasicParsing
+                $extension = if ($app.installerType) { ".$($app.installerType)" } else { [System.IO.Path]::GetExtension($app.installerUrl) }
+                $installerPath = Join-Path $env:TEMP "$($app.name)-installer$extension"
+                Invoke-WebRequest -Uri $app.installerUrl -OutFile $installerPath -UseBasicParsing
 
-                if ($extension -eq '.msi') { Start-Process -FilePath 'msiexec.exe' -ArgumentList "/i `"$installerPath`" $($App.switches)" -Wait }
+                if ($extension -eq '.msi') { Start-Process -FilePath 'msiexec.exe' -ArgumentList "/i `"$installerPath`" $($app.switches)" -Wait }
                 else { Start-Process -FilePath $installerPath -ArgumentList $App.switches -Wait }
             }
-            default     { Write-Log "ERROR: Unknown source '$($App.source)' for $($App.name)."; continue }
+            default     { Write-Log "ERROR: Unknown source '$($app.source)' for $($app.name)."; continue }
         }
 
-        Write-Log "Installed: $($App.name)"
+        Write-Log "Installed: $($app.name)"
     }
     catch {
-        Write-Log "ERROR: Failed to install [$($App.name)]: $_"
+        Write-Log "ERROR: Failed to install [$($app.name)]: $_"
     }
 }
 
 Write-Log '========== Application Installation Complete =========='
+
 # IMAGE OPTIMIZATIONS
- 
 try {
     Write-Log '========== Starting Image Optimizations =========='
-    $Opt = Invoke-RestMethod -Uri $optimizationsUrl
+    $optimizations = Invoke-RestMethod -Uri $optimizationsUrl
  
-    Write-Log "Disabling $($Opt.services.Count) services..."
-    foreach ($Svc in $Opt.services) {
+    Write-Log "Disabling $($optimizations.services.Count) services..."
+    foreach ($service in $optimizations.services) {
         try {
-            $existing = Get-Service -Name $Svc.name -ErrorAction SilentlyContinue
+            $existing = Get-Service -Name $service.name -ErrorAction SilentlyContinue
             if ($existing) {
-                Set-Service -Name $Svc.name -StartupType Disabled -ErrorAction Stop
-                Write-Log "  Disabled: $($Svc.name) ($($Svc.description))"
+                Set-Service -Name $service.name -StartupType Disabled -ErrorAction Stop
+                Write-Log "  Disabled: $($service.name) ($($service.description))"
             }
         }
         catch {
-            Write-Log "  WARNING: Could not disable $($Svc.name): $_"
+            Write-Log "  WARNING: Could not disable $($service.name): $_"
         }
     }
  
-    Write-Log "Disabling $($Opt.scheduledTasks.Count) scheduled tasks..."
-    foreach ($Task in $Opt.scheduledTasks) {
+    Write-Log "Disabling $($optimizations.scheduledTasks.Count) scheduled tasks..."
+    foreach ($task in $optimizations.scheduledTasks) {
         try {
-            $taskObj = Get-ScheduledTask -TaskPath $Task.path -TaskName $Task.name -ErrorAction SilentlyContinue
+            $taskObj = Get-ScheduledTask -TaskPath $task.path -TaskName $task.name -ErrorAction SilentlyContinue
             if ($taskObj -and $taskObj.State -ne 'Disabled') {
                 Disable-ScheduledTask -InputObject $taskObj | Out-Null
-                Write-Log "  Disabled: $($Task.path)\$($Task.name)"
+                Write-Log "  Disabled: $($task.path)\$($task.name)"
             }
         }
         catch {
-            Write-Log "  WARNING: Could not disable task $($Task.name): $_"
+            Write-Log "  WARNING: Could not disable task $($task.name): $_"
         }
     }
     # DEBLOAT
-    Write-Log "Removing $($Opt.appxPackages.Count) AppX packages..."
-    foreach ($Pkg in $Opt.appxPackages) {
+    Write-Log "Removing $($optimizations.appxPackages.Count) AppX packages..."
+    foreach ($package in $optimizations.appxPackages) {
         try {
-            Get-AppxProvisionedPackage -Online | Where-Object { $_.PackageName -like "*$Pkg*" } | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
-            Get-AppxPackage -AllUsers -Name "*$Pkg*" -ErrorAction SilentlyContinue | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue
-            Write-Log "  Removed: $Pkg"
+            Get-AppxProvisionedPackage -Online | Where-Object { $_.PackageName -like "*$package*" } | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+            Get-AppxPackage -AllUsers -Name "*$package*" -ErrorAction SilentlyContinue | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue
+            Write-Log "  Removed: $package"
         }
         catch {
-            Write-Log "  WARNING: Could not remove $Pkg`: $_"
+            Write-Log "  WARNING: Could not remove $package`: $_"
         }
     }
  
-    Write-Log "Applying $($Opt.registrySettings.Count) registry settings..."
-    foreach ($Reg in $Opt.registrySettings) {
+    Write-Log "Applying $($optimizations.registrySettings.Count) registry settings..."
+    foreach ($registrySetting in $$optimizations.registrySettings) {
         try {
-            if (-not (Test-Path $Reg.path)) {
-                New-Item -Path $Reg.path -Force | Out-Null
+            if (-not (Test-Path $registrySetting.path)) {
+                New-Item -Path $registrySetting.path -Force | Out-Null
             }
-            New-ItemProperty -Path $Reg.path -Name $Reg.name -PropertyType $Reg.type -Value $Reg.value -Force | Out-Null
-            Write-Log "  Set: $($Reg.path)\$($Reg.name) = $($Reg.value)"
+            New-ItemProperty -Path $registrySetting.path -Name $registrySetting.name -PropertyType $registrySetting.type -Value $registrySetting.value -Force | Out-Null
+            Write-Log "  Set: $($registrySetting.path)\$($registrySetting.name) = $($registrySetting.value)"
         }
         catch {
-            Write-Log "  WARNING: Could not set $($Reg.path)\$($Reg.name): $_"
+            Write-Log "  WARNING: Could not set $($registrySetting.path)\$($registrySetting.name): $_"
         }
     }
  
-    Write-Log "Disabling $($Opt.autologgers.Count) autologgers..."
-    foreach ($Logger in $Opt.autologgers) {
+    Write-Log "Disabling $($optimizations.autologgers.Count) autologgers..."
+    foreach ($logger in $optimizations.autologgers) {
         try {
-            if (Test-Path $Logger) {
-                New-ItemProperty -Path $Logger -Name 'Start' -PropertyType DWORD -Value 0 -Force | Out-Null
-                Write-Log "  Disabled: $Logger"
+            if (Test-Path $logger) {
+                New-ItemProperty -Path $logger -Name 'Start' -PropertyType DWORD -Value 0 -Force | Out-Null
+                Write-Log "  Disabled: $logger"
             }
         }
         catch {
-            Write-Log "  WARNING: Could not disable autologger $Logger`: $_"
+            Write-Log "  WARNING: Could not disable autologger $logger`: $_"
         }
     }
     Write-Log '========== Image Optimizations Complete =========='
