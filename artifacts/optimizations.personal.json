@@ -178,6 +178,12 @@
       "value": 1
     },
     {
+      "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\DeviceGuard\\Scenarios\\HypervisorEnforcedCodeIntegrity",
+      "name": "Enabled",
+      "type": "DWord",
+      "value": 1
+    },
+    {
       "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\FindMyDevice",
       "name": "AllowFindMyDevice",
       "type": "DWORD",
