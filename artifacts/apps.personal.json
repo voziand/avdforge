@@ -1,10 +1,6 @@
 {
   "packages": [
     {
-      "name": "flameshot",
-      "source": "chocolatey"
-    },
-    {
       "name": "powershell-core",
       "source": "chocolatey"
     },
@@ -39,6 +35,14 @@
       "switches": "/qn /norestart",
       "installerType": "msi",
       "detectPath": "C:\\Program Files\\Remote Desktop WebRTC Redirector\\MsRdcWebRTCSvc.exe"
+    },
+    {
+      "name": "flameshot",
+      "source": "custom",
+      "installerUrl": "https://github.com/flameshot-org/flameshot/releases/download/v14.0.0/Flameshot-14.0.0-win64.msi",
+      "switches": "/qn /norestart",
+      "installerType": "msi",
+      "detectPath": "C:\\Program Files\\Flameshot\\bin\\flameshot.exe"
     },
     {
       "name": "microsoft-office-deployment",
