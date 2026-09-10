@@ -195,6 +195,9 @@ if ($env:IMAGE_TYPE -eq 'pooled') {
     New-Item -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\Kerberos" -Name "Parameters" -ErrorAction Ignore
     New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\Kerberos\Parameters" -Name "CloudKerberosTicketRetrievalEnabled" -PropertyType DWord -Value 1 -Force
 
+    # Exclude local administrator from FsLogix profiles
+    Add-LocalGroupMember -Group "FSLogix Profile Exclude List" -Member "Administrators" -ErrorAction Ignore
+    
     # Exclude fslogix processes and profiles from Microsoft Defender
     Add-MpPreference -ExclusionProcess "frxsvc.exe"
     Add-MpPreference -ExclusionProcess "frxccds.exe"
