@@ -41,16 +41,13 @@ catch {
     throw
 }
 # APPLICATIONS INSTALLATION
-# DOWNLOAD APPLICATION MANIFEST
 try {
     Write-Log '========== Starting Application Installation =========='
-    Write-Log 'Downloading application manifest...'
-    Invoke-WebRequest -Uri $appsUrl -OutFile $applicationsFile -UseBasicParsing
-    $manifest = Get-Content $applicationsFile -Raw | ConvertFrom-Json
-    Write-Log "Packages to install: $($Manifest.packages.Count)"
+    $manifest = Invoke-RestMethod -Uri $appsUrl
+    Write-Log "Packages to install: $($manifest.packages.Count)"
 }
 catch {
-    Write-Log "FATAL: Failed to download application manifest: $_"
+    Write-Log "FATAL: Failed to get application manifest: $_"
     throw
 }
 
