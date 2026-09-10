@@ -1,7 +1,8 @@
 $errorActionPreference = 'Stop'
 $appsUrl = "https://raw.githubusercontent.com/voziand/avdforge/main/artifacts/apps.$($env:IMAGE_TYPE).json"
 $optimizationsUrl = "https://raw.githubusercontent.com/voziand/avdforge/main/artifacts/optimizations.$($env:IMAGE_TYPE).json"
-$logFile = 'C:\Windows\Temp\InstallApps.log'
+$logFile = 'C:\ProgramData\ImageBuilder\customizer.log'
+New-Item -Path 'C:\ProgramData\ImageBuilder' -ItemType Directory -Force | Out-Null
 $redirectionsFolder = "C:\ProgramData\FSLogix"
 $redirectionsFilePath = "$redirectionsFolder\redirections.xml"
 $redirectionsFileUrl = "https://raw.githubusercontent.com/voziand/avdforge/main/artifacts/redirections.xml"
