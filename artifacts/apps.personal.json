@@ -41,9 +41,9 @@
       "detectPath": "C:\\Program Files\\Remote Desktop WebRTC Redirector\\MsRdcWebRTCSvc.exe"
     },
     {
-      "name": "office365proplus",
+      "name": "microsoft-office-deployment",
       "source": "chocolatey",
-      "switches": "'/exclude:Access Publisher Lync'"
+      "switches": "'/64bit /Product:O365ProPlusRetail /Exclude:Access,Lync,Publisher'"
     }
   ]
 }
