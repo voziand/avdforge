@@ -157,7 +157,7 @@ catch {
 }
 
 # FsLogix configuration - Only applies if the image is multisession version, ie pooled deployment
-if ($env:IMAGE_TYPE -eq 'pooled') {
+if ($env:IMAGE_TYPE -eq 'Pooled') {
     Write-Log "Configuring FSLogix..."
     $storageAccount = "$($env:USR_PROFILE_SA_NAME).file.core.windows.net"
     $profileShare = "\\$($storageAccount)\$($env:USR_PROFILE_FS_NAME)"
