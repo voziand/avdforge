@@ -41,7 +41,7 @@
       "name": "flameshot",
       "source": "custom",
       "installerUrl": "https://github.com/flameshot-org/flameshot/releases/download/v14.0.0/Flameshot-14.0.0-win64.msi",
-      "switches": "/qn /norestart",
+      "switches": "/qn /norestart ALLUSERS=1",
       "installerType": "msi",
       "detectPath": "C:\\Program Files\\Flameshot\\bin\\flameshot.exe"
     }
