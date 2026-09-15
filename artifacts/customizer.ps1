@@ -161,7 +161,7 @@ if ($env:IMAGE_TYPE -eq 'Pooled') {
     Write-Log "Configuring FSLogix..."
     $storageAccount = "$($env:USR_PROFILE_SA_NAME).file.core.windows.net"
     $profileShare = "\\$($storageAccount)\$($env:USR_PROFILE_FS_NAME)"
-
+    write-log "profiles path: $profileShare"
     New-Item -Path "HKLM:\SOFTWARE" -Name "FSLogix" -ErrorAction Ignore
     New-Item -Path "HKLM:\SOFTWARE\FSLogix" -Name "Profiles" -ErrorAction Ignore
     New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "Enabled" -PropertyType dword -Value 1 -Force
