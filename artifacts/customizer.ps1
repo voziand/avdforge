@@ -1,11 +1,16 @@
 $errorActionPreference = 'Stop'
-$appsUrl = "https://raw.githubusercontent.com/voziand/avdforge/main/artifacts/apps.$($env:IMAGE_TYPE).json"
-$optimizationsUrl = "https://raw.githubusercontent.com/voziand/avdforge/main/artifacts/optimizations.$($env:IMAGE_TYPE).json"
-$logFile = 'C:\ProgramData\ImageBuilder\customizer.log'
-New-Item -Path 'C:\ProgramData\ImageBuilder' -ItemType Directory -Force | Out-Null
+$configDirectory = 'C:\ProgramData\ImageBuilder'
+$configPath = Join-Path $configDirectory 'customizer-config.json'
+$logPath = Join-Path $configDirectory 'customizer.log'
+$config = Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json
+$imageType = [string]$config.imageType
+$storageAccountName = [string]$config.storageAccountName
+$fileShareName = [string]$config.fileShareName
 $redirectionsFolder = "C:\ProgramData\FSLogix"
 $redirectionsFilePath = "$redirectionsFolder\redirections.xml"
 $redirectionsFileUrl = "https://raw.githubusercontent.com/voziand/avdforge/main/artifacts/redirections.xml"
+$appsUrl = "https://raw.githubusercontent.com/voziand/avdforge/main/artifacts/apps.$($imageType).json"
+$optimizationsUrl = "https://raw.githubusercontent.com/voziand/avdforge/main/artifacts/optimizations.$($imageType).json"
 
 function Write-Log {
     param([string]$Message)
@@ -157,11 +162,11 @@ catch {
 }
 
 # FsLogix configuration - Only applies if the image is multisession version, ie pooled deployment
-if ($env:IMAGE_TYPE -eq 'Pooled') {
+if ($imageType -eq 'pooled') {
     Write-Log "Configuring FSLogix..."
-    $storageAccount = "$($env:USR_PROFILE_SA_NAME).file.core.windows.net"
-    $profileShare = "\\$($storageAccount)\$($env:USR_PROFILE_FS_NAME)"
-    write-log "profiles path: $profileShare"
+    $storageAccount = "$($storageAccountName).file.core.windows.net"
+    $profileShare = "\\$($storageAccount)\$($$fileShareName)"
+    Write-Log "profiles path: $profileShare"
     New-Item -Path "HKLM:\SOFTWARE" -Name "FSLogix" -ErrorAction Ignore
     New-Item -Path "HKLM:\SOFTWARE\FSLogix" -Name "Profiles" -ErrorAction Ignore
     New-ItemProperty -Path "HKLM:\SOFTWARE\FSLogix\Profiles" -Name "Enabled" -PropertyType dword -Value 1 -Force
